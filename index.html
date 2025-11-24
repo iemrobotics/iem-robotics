@@ -6,16 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IEM Robotics Chatbot</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         #chatbot-button {
             position: fixed;
             bottom: 20px;
@@ -308,6 +298,24 @@
             color: #0056b3;
         }
 
+        .message.bot .message-content a {
+            color: #0084FF;
+            text-decoration: none;
+        }
+
+        .message.bot .message-content a:hover {
+            text-decoration: underline;
+        }
+
+        .message.bot .message-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message.bot .message-content li {
+            margin: 4px 0;
+        }
+
         .message.user .message-content {
             background: #0084FF;
             color: white;
@@ -426,7 +434,7 @@
                 <span>🤖 IEM Robotics Support</span>
                 <button id="close-btn">×</button>
             </div>
-            <div id="header-hook">🔥 Let’s turn curiosity into creation!</div>
+            <div id="header-hook">🔥 Let's turn curiosity into creation!</div>
         </div>
 
         <!-- Quick Options Screen -->
@@ -551,7 +559,7 @@
 
         // Hook Lines
         const hooks = [
-            "🔥 Let’s turn curiosity into creation!",
+            "🔥 Let's turn curiosity into creation!",
             "✨ Innovation begins here.",
             "🤖 The future of innovation starts with you!",
             "🚀 Smarter STEM learning with IEM Robotics!"
@@ -731,7 +739,6 @@
                     case 'other': autoResponse = "✉️ Thank you! We'll respond to your query shortly."; break;
                 }
 
-                // Removed showTyping() from here as it's already at the start of try block
                 setTimeout(() => {
                     addMessage(autoResponse);
                     hideTyping();
@@ -752,6 +759,76 @@
             const msgDiv = document.createElement("div");
             msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
             msgDiv.innerHTML = `<div class="message-content">${formatText(text)}</div>`;
+            chatMessages.insertBefore(msgDiv, typingIndicator); // Insert before typing indicator
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            typingIndicator.style.display = "block";
+            chatMessages.appendChild(typingIndicator); // Move to bottom
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            typingIndicator.style.display = "none";
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function formatText(text) {
+            // Bold text: **text** -> <strong>text</strong>
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Email addresses
+            text = text.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, '<a href="mailto:$1">$1</a>');
+
+            // Phone numbers (Indian format +91 XXXXXXXXXX or similar)
+            text = text.replace(/(\+?\d{1,3}[\s-]?\d{10}|\d{10})/g, '<a href="tel:$1">$1</a>');
+
+            // URLs
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+
+            // Bullet lists: - item
+            text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+            text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Numbered lists: 1. item, 2. item, etc.
+            text = text.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');
+
+            // Line breaks
+            text = text.replace(/\n/g, '<br>');
+
+            return text;
+        }
+
+        // Chat Logic (for after form submission)
+        async function sendMessage(prompt) {
+            if (!prompt.trim()) return;
+
+            addMessage(prompt, true);
+            chatInput.value = "";
+            showTyping();
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/chat/?prompt=${encodeURIComponent(prompt)}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await response.json();
+                hideTyping();
+                addMessage(data.reply);
+            } catch (error) {
+                hideTyping();
+                addMessage("Sorry, something went wrong.");
+            }
+        }
+
+        sendBtn.onclick = () => sendMessage(chatInput.value);
+        chatInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage(chatInput.value);
+        });
 
     </script>
 </body>
