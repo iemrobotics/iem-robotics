@@ -271,12 +271,15 @@
             min-height: 0;
             display: flex;
             flex-direction: column;
+            scroll-behavior: smooth;
         }
 
         .message {
             margin-bottom: 12px;
             display: flex;
             gap: 8px;
+            opacity: 0;
+            animation: fadeInSlideUp 0.4s ease-out forwards;
         }
 
         .message.user {
@@ -406,6 +409,19 @@
 
             30% {
                 transform: translateY(-10px);
+            }
+        }
+
+        /* Message Animation */
+        @keyframes fadeInSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
@@ -775,7 +791,13 @@
         }
 
         function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Smooth scroll to bottom with a slight delay to ensure DOM is updated
+            setTimeout(() => {
+                chatMessages.scrollTo({
+                    top: chatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
         }
 
         function formatText(text) {
