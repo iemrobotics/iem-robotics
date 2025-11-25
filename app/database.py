@@ -12,7 +12,15 @@ if not DATABASE_URL:
 else:
     print("DATABASE_URL is set")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,        # recycle every 30 min
+    pool_pre_ping=True,       # ping before using connection
+    connect_args={"sslmode": "require"}  # IMPORTANT for Render/Cloud
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
