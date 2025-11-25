@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime
-from database import Base
+from app.database import Base
 from datetime import datetime
 
 class Enquiry(Base):
