@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
-from services.chat_services import generate_response
-from models.response import EnquiryModel
-from models.enquiry import Enquiry
-from database import get_db
+from app.services.chat_services import generate_response
+from app.models.response import EnquiryModel
+from app.models.enquiry import Enquiry
+from app.database import get_db
 from sqlalchemy.orm import Session
 from datetime import datetime
 
